@@ -40,3 +40,15 @@ func RandomFullName() string {
 func RandomEmail() string {
 	return fmt.Sprintf("%s@email.com", randomString(6))
 }
+
+// RandomBookName generates a random book name.
+func RandomBookName() string {
+	return randomString(10)
+}
+
+// RandomLanguage generates a random language code.
+func RandomLanguage() string {
+	languages := []string{"en-US", "zh-TW"}
+	n := len(languages)
+	return languages[rand.Intn(n)]
+}
