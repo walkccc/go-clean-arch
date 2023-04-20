@@ -1,0 +1,11 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: "./queries/"
+    schema: "./migration/"
+    gen:
+      go:
+        package: "repository"
+        out: "../repository"
+        output_db_file_name: "main"
+        emit_json_tags: true
