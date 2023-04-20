@@ -39,3 +39,86 @@ dbdocs password —set secret —project go_clean_arch
 npm install -g @dbml/cli
 dbml2sql --postgres -o docs/schemal.sql docs/db.dbml
 ```
+
+## Install [Docker](https://www.docker.com) and [PostgresSQL image](https://hub.docker.com/_/postgres).
+
+```bash
+# Install Docker.
+brew install docker
+
+# Run Docker app so that we can access the `docker` command.
+
+# Pull the PostgresSQL image.
+docker pull postgres:15.2-alpine
+
+# Check the downloaded image.
+docker images
+```
+
+## Run a Docker container using the official PostgresSQL image.
+
+Creates and runs a Docker container with the name `postgres`, using the official
+`postgres:15-alpine` Docker image. The container is started as a background
+process (`-d` flag) and is mapped to port `5432` of the host machine
+(`-p 127.0.0.1:5432:5432/tcp` flag), which is the default port for PostgreSQL.
+
+The container is also configured with the environment variables `POSTGRES_USER`
+and `POSTGRES_PASSWORD`, which set the default username and password for the
+PostgreSQL database. In this case, the username is set to `root` and the
+password is set to `password`.
+
+```bash
+docker run --name postgres \
+  -p 127.0.0.1:5432:5432/tcp \
+  -e POSTGRES_USER=root \
+  -e POSTGRES_PASSWORD=password \
+  -d postgres:15.2-alpine
+```
+
+```bash
+# Enter the Postgres shell.
+docker exec -it postgres psql -U root
+
+# Try the following query in the shell.
+SELECT now();
+```
+
+## Install [TablePlus](https://tableplus.com)
+
+```bash
+# Install TablePlus.
+brew install tableplus
+```
+
+Connect to Postgres with the setting
+
+![](https://i.imgur.com/jgHY7h3.png)
+
+## Database Migration
+
+```bash
+# Install `migrate` command.
+brew install golang-migrate
+
+# Check the installed `migrate` command.
+migrate --version
+
+# Create the db migration directory.
+mkdir -p db/migration
+
+# Create the first migration script.
+migrate create -ext sql -dir internal/db/migration -seq init_schema
+```
+
+Now, create a [Makefile](./Makefile) to save time and run the following:
+
+```bash
+# Run a PostgreSQL container.
+make postgres
+
+# Create a DB called "microservice" in this clean architecture.
+make createdb
+
+# Migrate up to create tables in the DB.
+make migrateup
+```
