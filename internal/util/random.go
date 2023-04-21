@@ -31,6 +31,11 @@ func RandomUsername() string {
 	return randomString(6)
 }
 
+// RandomPassword generates a random password.
+func RandomPassword() string {
+	return randomString(6)
+}
+
 // RandomFullName generates a random full name.
 func RandomFullName() string {
 	return fmt.Sprintf("%s %s", randomString(3), randomString(3))
