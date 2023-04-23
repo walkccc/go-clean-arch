@@ -26,6 +26,13 @@ func randomString(n int) string {
 	return sb.String()
 }
 
+// RandomString generates a random string of length n.
+// TODO: Figure out a better way for these random functions. To accelerate
+// the development, export this RandomString for now.
+func RandomString(n int) string {
+	return randomString(n)
+}
+
 // RandomUsername generates a random username.
 func RandomUsername() string {
 	return randomString(6)
