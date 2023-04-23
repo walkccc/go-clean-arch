@@ -198,3 +198,14 @@ go install github.com/golang/mock/mockgen@v1.6.0
 # Check the installed mockgen.
 which mockgen
 ```
+
+## Serve HTTP request with [gRPC-Gateway](https://github.com/grpc-ecosystem/grpc-gateway)
+
+1. Add [required protos](./api/proto/google/api/) from
+   [googleapis/google/api](https://github.com/googleapis/googleapis/tree/master/google/api)
+1. Add [required tools](./tools/tools.go)
+1. Update annotation in [microservice.proto](./api/proto/microservice.proto)
+
+```bash
+make proto
+```

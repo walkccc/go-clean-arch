@@ -4,10 +4,16 @@ package pb;
 
 option go_package = "github.com/walkccc/go-clean-arch/pb";
 
+import "google/api/annotations.proto";
 import "user.proto";
 
 service Microservice {
-  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {}
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {
+    option (google.api.http) = {
+      post : "/users"
+      body : "*"
+    };
+  }
 }
 
 message CreateUserRequest {

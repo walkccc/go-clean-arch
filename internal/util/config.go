@@ -10,6 +10,7 @@ type Config struct {
 	DBDriver          string `mapstructure:"DB_DRIVER"`
 	DBSource          string `mapstructure:"DB_SOURCE"`
 	GRPCServerAddress string `mapstructure:"GRPC_SERVER_ADDRESS"`
+	HTTPServerAddress string `mapstructure:"HTTP_SERVER_ADDRESS"`
 }
 
 // Reads configuration from a environment file or variables.

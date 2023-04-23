@@ -48,6 +48,8 @@ proto:
 			--go_opt=paths=source_relative \
 			--go-grpc_out=pkg \
 			--go-grpc_opt=paths=source_relative \
+			--grpc-gateway_out=pkg \
+			--grpc-gateway_opt=paths=source_relative \
 			api/proto/*.proto
 
 server:
