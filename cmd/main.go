@@ -35,7 +35,7 @@ func main() {
 }
 
 func runGrpcServer(config util.Config, store repository.Store) {
-	microserviceServer := app.NewMicroserviceServer(store)
+	microserviceServer := app.NewMicroserviceServer(config, store)
 	grpcServer := grpc.NewServer()
 	pb.RegisterMicroserviceServer(grpcServer, microserviceServer)
 	reflection.Register(grpcServer)
@@ -53,7 +53,7 @@ func runGrpcServer(config util.Config, store repository.Store) {
 }
 
 func runGrpcGatewayServer(config util.Config, store repository.Store) {
-	microserviceServer := app.NewMicroserviceServer(store)
+	microserviceServer := app.NewMicroserviceServer(config, store)
 
 	jsonOption := runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
 		MarshalOptions: protojson.MarshalOptions{

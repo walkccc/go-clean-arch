@@ -45,8 +45,7 @@ func eqCreateUserParams(arg repository.CreateUserParams, password string) gomock
 }
 
 func TestCreateUser(t *testing.T) {
-	password := util.RandomPassword()
-	user := randomUser()
+	user, password := randomUser(t)
 
 	testCases := []struct {
 		name          string
@@ -117,10 +116,15 @@ func TestCreateUser(t *testing.T) {
 	}
 }
 
-func randomUser() repository.User {
-	return repository.User{
-		Username: util.RandomUsername(),
-		FullName: util.RandomFullName(),
-		Email:    util.RandomEmail(),
+func randomUser(t *testing.T) (user repository.User, password string) {
+	password = util.RandomPassword()
+	hashedPassword, err := util.HashPassword(password)
+	require.NoError(t, err)
+	user = repository.User{
+		Username:       util.RandomUsername(),
+		HashedPassword: hashedPassword,
+		FullName:       util.RandomFullName(),
+		Email:          util.RandomEmail(),
 	}
+	return
 }
