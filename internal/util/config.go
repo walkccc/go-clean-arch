@@ -7,8 +7,9 @@ import (
 // Stores all configuration of the application.
 // The values are read by Viper from a environment file or variable.
 type Config struct {
-	DBDriver string `mapstructure:"DB_DRIVER"`
-	DBSource string `mapstructure:"DB_SOURCE"`
+	DBDriver          string `mapstructure:"DB_DRIVER"`
+	DBSource          string `mapstructure:"DB_SOURCE"`
+	GRPCServerAddress string `mapstructure:"GRPC_SERVER_ADDRESS"`
 }
 
 // Reads configuration from a environment file or variables.

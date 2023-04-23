@@ -40,5 +40,21 @@ sqlc:
 test:
 	go test -v -cover ./...
 
+# Generate gRPC code.
+proto:
+	rm pkg/*.go
+	protoc --proto_path=api/proto \
+			--go_out=pkg \
+			--go_opt=paths=source_relative \
+			--go-grpc_out=pkg \
+			--go-grpc_opt=paths=source_relative \
+			api/proto/*.proto
+
+server:
+	go run cmd/main.go
+
+evans:
+	evans -r repl
+
 .PHONY: db_docs db_schema postgres createdb dropdb migrateup migratedown sqlc \
-		test
+		test proto server evans

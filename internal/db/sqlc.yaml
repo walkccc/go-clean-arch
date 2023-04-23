@@ -9,3 +9,4 @@ sql:
         out: "../repository"
         output_db_file_name: "main"
         emit_json_tags: true
+        emit_interface: true # Emit `Querier` interface

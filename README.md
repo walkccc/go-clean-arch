@@ -151,3 +151,37 @@ make sqlc
 # Eliminate red lines inside `./internal/repository/user.sql.go`.
 go mod init github.com/walkccc/go-clean-arch
 ```
+
+## Install [gRPC for Go](https://grpc.io/docs/languages/go/quickstart/)
+
+```bash
+# Install protobuf
+brew install protobuf
+```
+
+```bash
+go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28
+go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
+```
+
+Add `"protoc": { "options": ["--proto_path=proto"] },` to
+`~/Library/Application Support/Code/User/settings.json` to eliminate red lines.
+
+```bash
+# Generate gRPC code.
+make proto
+
+# Download required packages.
+go mod tidy
+```
+
+## Install [Evans](https://github.com/ktr0731/evans) to test gRPC
+
+```bash
+# Install evans.
+brew tap ktr0731/evans
+brew install evans
+
+# Start evans REPL.
+make evans
+```
