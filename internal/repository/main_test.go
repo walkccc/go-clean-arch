@@ -16,7 +16,7 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatal("Cannot load config: ", err)
 	}
-	testDB := NewDB(config.DBDriver, config.DBSource)
+	testDB := NewDB(config.DBDriver, config.TestDBSource)
 	testQueries = New(testDB)
 	os.Exit(m.Run())
 }

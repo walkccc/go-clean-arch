@@ -209,3 +209,35 @@ which mockgen
 ```bash
 make proto
 ```
+
+## Create Docker image
+
+```bash
+# Creates a Docker image with the name "microservice" and the tag "latest" using
+# the Dockerfile in the current directory.
+docker build -t microservice:latest .
+```
+
+## Create Docker Compose
+
+[docker-compose.yaml](./docker-compose.yaml) defines two services: `postgres`
+and `api`.
+
+- The `postgres` service sets up a PostgreSQL database container with some
+  environment variables and a healthcheck.
+- The `api` service builds a container from the [Dockerfile](./Dockerfile), sets
+  an environment variable with the database connection string (which will be
+  used in [start.sh](./start.sh)), and depends on the postgres service to be
+  healthy before starting up.
+
+When you run `docker compose up`, Docker Compose starts up the containers for
+both services, with the `api` service waiting for the `postgres` service to be
+ready before starting.
+
+```bash
+# Make the start.sh file executable so that it can be run in Docker container.
+chmod +x start.sh
+
+# Start up all the services defined in a Docker Compose file.
+docker compose up
+```
