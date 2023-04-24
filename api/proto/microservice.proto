@@ -4,4 +4,17 @@ package pb;
 
 option go_package = "github.com/walkccc/go-clean-arch/pb";
 
-service Microservice {}
+import "user.proto";
+
+service Microservice {
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {}
+}
+
+message CreateUserRequest {
+  string username = 1;
+  string full_name = 2;
+  string email = 3;
+  string password = 4;
+}
+
+message CreateUserResponse { User user = 1; }

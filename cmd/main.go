@@ -16,10 +16,10 @@ import (
 func main() {
 	config, err := util.LoadConfig(".")
 	db := repository.NewDB(config.DBDriver, config.DBSource)
-	// err = db.Ping()
-	// if err != nil {
-	// 	log.Fatalf("Cannot ping DB: %v", err)
-	// }
+	err = db.Ping()
+	if err != nil {
+		log.Fatalf("Cannot ping DB: %v", err)
+	}
 
 	if err != nil {
 		log.Fatal("Cannot load config: ", err)

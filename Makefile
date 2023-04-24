@@ -56,5 +56,14 @@ server:
 evans:
 	evans -r repl
 
+# Generate a mock implementation located at `internal/db/mock/store.go` of the
+# `Store` interface in the
+# `github.com/walkccc/go-clean-arch/internal/repository` package.
+#
+# This mock implementation can then be used for testing purposes.
+mockgen:
+	mockgen -package mock -destination internal/db/mock/store.go \
+			github.com/walkccc/go-clean-arch/internal/repository Store
+
 .PHONY: db_docs db_schema postgres createdb dropdb migrateup migratedown sqlc \
-		test proto server evans
+		test proto server evans mockgen
