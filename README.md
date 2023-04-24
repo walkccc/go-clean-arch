@@ -241,3 +241,7 @@ chmod +x start.sh
 # Start up all the services defined in a Docker Compose file.
 docker compose up
 ```
+
+## Deployment
+
+To deploy to AWS, please read [AWS deployment](./docs/aws_deployment.md)
