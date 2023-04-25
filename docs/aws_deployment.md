@@ -172,3 +172,165 @@ aws ecr get-login-password | docker login --username AWS \
 docker pull $IMAGE_URI
 docker run -p 50051:50051 -p 8080:8080 $IMAGE_URI
 ```
+
+## AWS ECS - Create cluster to run containerized task
+
+```bash
+CLUSTER_NAME=MyCluster
+TASK_DEFINITION=microservice
+```
+
+```bash
+aws ecs create-cluster \
+    --cluster-name $CLUSTER_NAME
+```
+
+```bash
+aws ecs register-task-definition \
+    --cli-input-json '{
+      "requiresCompatibilities": ["FARGATE"],
+      "family": "'$TASK_DEFINITION'",
+      "containerDefinitions": [
+        {
+          "name": "'$TASK_DEFINITION'",
+          "image": "'$AWS_ACCOUNT_ID'.dkr.ecr.us-east-1.amazonaws.com/microservice:latest",
+          "essential": true
+        }
+      ],
+      "volumes": [],
+      "networkMode": "awsvpc",
+      "memory": "1 GB",
+      "cpu": ".5 vCPU",
+      "executionRoleArn": "arn:aws:iam::'$AWS_ACCOUNT_ID':role/ecsTaskExecutionRole"
+    }'
+```
+
+Before running the task on our cluster, we need to retrieve required subnets and
+security groups.
+
+For subnets,
+
+```bash
+SUBNET_IDS=$(aws ec2 describe-subnets \
+    | jq '.Subnets[]' \
+    | jq '.SubnetId' | jq -srR 'split("\n") | .[:-1] | join(",")')
+```
+
+Or filter out subnets with specific `AvailabilityZone` if got error like this:
+
+```
+An error occurred (UnsupportedAvailabilityZoneException) when calling the
+CreateCluster operation: Cannot create cluster 'bank' because us-east-1e, the
+targeted availability zone, does not currently have sufficient capacity to
+support the cluster. Retry and choose from these availability zones: us-east-1a,
+us-east-1b, us-east-1c, us-east-1d, us-east-1f
+```
+
+```bash
+SUBNET_IDS=$(aws ec2 describe-subnets \
+    | jq '.Subnets | map(select(.AvailabilityZone != "us-east-1e")) []' \
+    | jq '.SubnetId' | jq -srR 'split("\n") | .[:-1] | join(",")')
+```
+
+For security group, create two security groups to access port 8080 and port
+50051 from anywhere, respectively,
+
+```bash
+HTTP_VPC_SECURITY_GROUP_ID=$(aws ec2 create-security-group \
+    --group-name AccessHTTPAnywhere \
+    --description "Access Postgres anywhere" \
+    --query "SecurityGroups[*].GroupId" \
+    --output text)
+```
+
+```bash
+aws ec2 authorize-security-group-ingress \
+    --group-name AccessHTTPAnywhere \
+    --protocol tcp \
+    --port 8080 \
+    --cidr 0.0.0.0/0
+```
+
+```bash
+GRPC_VPC_SECURITY_GROUP_ID=$(aws ec2 create-security-group \
+    --group-name AccessGRPCAnywhere \
+    --description "Access Postgres anywhere" \
+    --query "SecurityGroups[*].GroupId" \
+    --output text)
+```
+
+```bash
+aws ec2 authorize-security-group-ingress \
+    --group-name AccessGRPCAnywhere \
+    --protocol tcp \
+    --port 50051 \
+    --cidr 0.0.0.0/0
+```
+
+or read the existing security groups
+
+```bash
+HTTP_VPC_SECURITY_GROUP_ID=$(aws ec2 describe-security-groups \
+    --filters "Name=group-name,Values=AccessHTTPAnywhere" \
+    --query "SecurityGroups[*].GroupId" \
+    --output text)
+GRPC_VPC_SECURITY_GROUP_ID=$(aws ec2 describe-security-groups \
+    --filters "Name=group-name,Values=AccessGRPCAnywhere" \
+    --query "SecurityGroups[*].GroupId" \
+    --output text)
+```
+
+Finally, we can create a service running the task:
+
+```bash
+SERVICE_NAME=MyMicroservice
+```
+
+```bash
+aws ecs create-service \
+    --service-name $SERVICE_NAME \
+    --cluster $CLUSTER_NAME \
+    --task-definition $TASK_DEFINITION \
+    --launch-type FARGATE \
+    --platform-version LATEST \
+    --desired-count 1 \
+    --network-configuration '{
+        "awsvpcConfiguration": {
+          "subnets": ['$SUBNET_IDS'],
+          "securityGroups": ["'$HTTP_VPC_SECURITY_GROUP_ID'", "'$GRPC_VPC_SECURITY_GROUP_ID'"],
+          "assignPublicIp": "ENABLED"
+        }
+      }'
+```
+
+Finally, we can run the task on our cluster:
+
+```bash
+aws ecs run-task \
+    --cluster $CLUSTER_NAME \
+    --task-definition $TASK_DEFINITION \
+    --launch-type FARGATE \
+    --platform-version LATEST \
+    --network-configuration '{
+        "awsvpcConfiguration": {
+          "subnets": ['$SUBNET_IDS'],
+          "securityGroups": ["'$HTTP_VPC_SECURITY_GROUP_ID'", "'$GRPC_VPC_SECURITY_GROUP_ID'"],
+          "assignPublicIp": "ENABLED"
+        }
+      }'
+```
+
+To clean up all created running services, running tasks, and clusters,
+
+```bash
+aws ecs delete-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --force
+aws ecs delete-cluster --cluster $CLUSTER_NAME
+```
+
+To clean up all task definitionsr,
+
+```bash
+aws ecs deregister-task-definition --task-definition $TASK_DEFINITION:1
+aws ecs delete-task-definitions --task-definitions $TASK_DEFINITION:1
+# ...
+```
