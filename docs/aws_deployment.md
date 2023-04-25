@@ -160,3 +160,15 @@ Then, store `AWS_SECRET_ID` in GitHub secretss
 gh secret set AWS_SECRET_ID
 # Paste the $AWS_SECRET_ID
 ```
+
+## (Optional) Pull Docker image from AWS ECR to run locally
+
+```bash
+aws ecr get-login-password | docker login --username AWS \
+    --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com
+```
+
+```bash
+docker pull $IMAGE_URI
+docker run -p 50051:50051 -p 8080:8080 $IMAGE_URI
+```
