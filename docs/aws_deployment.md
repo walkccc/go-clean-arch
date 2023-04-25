@@ -123,3 +123,40 @@ aws rds delete-db-instance --db-instance-identifier microservice --skip-final-sn
 ```bash
 aws ec2 delete-security-group --group-name AccessPostgresAnywhere
 ```
+
+## AWS Secrets Manager
+
+```bash
+AWS_SECRET_ID=MyAwsSecretId
+PASSWORD=password
+DB_SOURCE=$(aws rds describe-db-instances \
+    --db-instance-identifier microservice --no-paginate | jq -r \
+    '.DBInstances[0] | "postgresql://" + .MasterUsername + ":" + "'$PASSWORD'" + "@" + .Endpoint.Address + ":" + (.Endpoint.Port | tostring) + "/microservice"')
+```
+
+```bash
+aws secretsmanager create-secret \
+    --name $AWS_SECRET_ID \
+    --description "Environment variables used in microservice db" \
+    --secret-string '{
+        "DB_DRIVER": "postgres",
+        "DB_SOURCE": "'$DB_SOURCE'",
+        "GRPC_SERVER_ADDRESS": "0.0.0.0:50051",
+        "HTTP_SERVER_ADDRESS": "0.0.0.0:8080",
+        "TOKEN_SYMMETRIC_KEY": "'$(openssl rand -hex 64 | head -c 32)'",
+        "ACCESS_TOKEN_DURATION": "15m",
+        "REFRESH_TOKEN_DURATION": "24h"}'
+```
+
+```bash
+aws iam attach-role-policy \
+    --role-name $GITHUB_ACTIONS_ROLE_GO_CLEAN_ARCH \
+    --policy-arn arn:aws:iam::aws:policy/SecretsManagerReadWrite
+```
+
+Then, store `AWS_SECRET_ID` in GitHub secretss
+
+```bash
+gh secret set AWS_SECRET_ID
+# Paste the $AWS_SECRET_ID
+```
