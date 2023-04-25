@@ -67,3 +67,59 @@ Then, store `AWS_ROLE_TO_ASSUME` in GitHub secrets.
 gh secret set AWS_ROLE_TO_ASSUME
 # Paste the arn:aws:iam:"$AWS_ACCOUNT_ID":role/$GITHUB_ACTIONS_ROLE_GO_CLEAN_ARCH
 ```
+
+## AWS RDS - Create db instance
+
+Create a new security group
+
+```bash
+VPC_SECURITY_GROUP_ID=$(aws ec2 create-security-group \
+    --group-name AccessPostgresAnywhere \
+    --description "Access Postgres anywhere" \
+    --query "SecurityGroups[*].GroupId" \
+    --output text)
+```
+
+```bash
+aws ec2 authorize-security-group-ingress \
+    --group-name AccessPostgresAnywhere \
+    --protocol tcp \
+    --port 5432 \
+    --cidr 0.0.0.0/0
+```
+
+or read the existing security group
+
+```bash
+VPC_SECURITY_GROUP_ID=$(aws ec2 describe-security-groups \
+    --filters "Name=group-name,Values=AccessPostgresAnywhere" \
+    --query "SecurityGroups[*].GroupId" \
+    --output text)
+```
+
+```bash
+aws rds create-db-instance \
+    --engine postgres \
+    --engine-version 15.2 \
+    --db-instance-identifier microservice \
+    --master-username root \
+    --master-user-password password \
+    --db-instance-class db.t3.micro \
+    --allocated-storage 20  \
+    --publicly-accessible \
+    --vpc-security-group-ids $VPC_SECURITY_GROUP_ID \
+    --enable-performance-insights \
+    --db-name microservice \
+    --backup-retention-period 7 \
+    --auto-minor-version-upgrade
+```
+
+To delete the security group, you need to delete the DB instance first:
+
+```bash
+aws rds delete-db-instance --db-instance-identifier microservice --skip-final-snapshot
+```
+
+```bash
+aws ec2 delete-security-group --group-name AccessPostgresAnywhere
+```
